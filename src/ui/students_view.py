@@ -281,7 +281,11 @@ class StudentsView(QWidget):
         """Gère le double-clic sur une ligne."""
         row = index.row()
         student_data = self.current_students[row]
-        self.student_selected.emit(student_data['student'].id)
+        
+        from src.ui.student_detail import StudentDetailDialog
+        dialog = StudentDetailDialog(student_data['student'].id, self)
+        dialog.exec()
+        self.refresh()
     
     def _show_context_menu(self, position):
         """Affiche le menu contextuel."""
@@ -319,7 +323,11 @@ class StudentsView(QWidget):
         
         row = selected_rows[0].row()
         student_data = self.current_students[row]
-        self.student_selected.emit(student_data['student'].id)
+        
+        from src.ui.student_detail import StudentDetailDialog
+        dialog = StudentDetailDialog(student_data['student'].id, self)
+        dialog.exec()
+        self.refresh()
     
     def refresh(self):
         """Actualise la liste des élèves."""
