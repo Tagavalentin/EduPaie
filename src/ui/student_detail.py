@@ -1,11 +1,14 @@
 from PySide6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QLabel, 
                                  QPushButton, QTableView, QHeaderView, QMessageBox,
                                  QGroupBox, QDialog)
+import subprocess
+import platform
 from PySide6.QtCore import Qt
 
 from src.services.student_service import StudentService, PaymentStatus
 from src.repositories.payment_repository import PaymentRepository
 from src.utils.formatters import format_fcfa
+from src.utils.pdf_generator import PDFGenerator
 
 
 class StudentDetail(QWidget):
@@ -218,9 +221,44 @@ class StudentDetail(QWidget):
         model = self.payments_table.model()
         payment = model.payments[row]
         
-        # Pour l'instant, afficher les détails
-        # La génération PDF sera implémentée dans la branche feature/recus-pdf
-        self._show_payment_details(payment)
+        # Générer et ouvrir le reçu PDF
+        self._generate_receipt_pdf(payment)
+    
+    def _generate_receipt_pdf(self, payment):
+        """Génère et ouvre le reçu PDF pour un paiement."""
+        from src.repositories.student_repository import StudentRepository
+        repo = StudentRepository()
+        student = repo.get_by_id(payment.student_id)
+        
+        if not student:
+            QMessageBox.critical(self, "Erreur", "Élève introuvable")
+            return
+        
+        try:
+            generator = PDFGenerator()
+            from pathlib import Path
+            output_path = Path.home() / "Desktop" / f"recu_{payment.numero_recu}.pdf"
+            generator.generate_receipt(payment, student, output_path)
+            
+            # Ouvrir le PDF
+            self._open_file(output_path)
+            
+        except Exception as e:
+            QMessageBox.warning(self, "Avertissement", 
+                               f"Le PDF n'a pas pu être généré : {str(e)}")
+    
+    def _open_file(self, file_path):
+        """Ouvre un fichier avec l'application par défaut du système."""
+        try:
+            if platform.system() == 'Windows':
+                subprocess.Popen(['start', '', str(file_path)], shell=True)
+            elif platform.system() == 'Darwin':  # macOS
+                subprocess.Popen(['open', str(file_path)])
+            else:  # Linux
+                subprocess.Popen(['xdg-open', str(file_path)])
+        except Exception as e:
+            QMessageBox.warning(self, "Avertissement", 
+                               f"Le fichier n'a pas pu être ouvert : {str(e)}")
     
     def _on_close(self):
         """Gère le clic sur le bouton Fermer."""

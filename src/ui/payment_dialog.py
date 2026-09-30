@@ -1,11 +1,14 @@
 from PySide6.QtWidgets import (QDialog, QVBoxLayout, QHBoxLayout, QLabel, 
                                  QSpinBox, QDateEdit, QComboBox, QPushButton, 
-                                 QMessageBox, QGroupBox)
+                                 QMessageBox, QGroupBox, QCheckBox)
 from PySide6.QtCore import Qt, QDate
+import subprocess
+import platform
 
 from src.services.payment_service import PaymentService
 from src.services.student_service import StudentService
 from src.utils.formatters import format_fcfa
+from src.utils.pdf_generator import PDFGenerator
 
 
 class PaymentDialog(QDialog):
@@ -80,6 +83,11 @@ class PaymentDialog(QDialog):
         mode_layout.addWidget(mode_label)
         mode_layout.addWidget(self.mode_input)
         form_layout.addLayout(mode_layout)
+        
+        # Générer le reçu
+        self.generate_receipt_checkbox = QCheckBox("Générer le reçu PDF")
+        self.generate_receipt_checkbox.setChecked(True)
+        form_layout.addWidget(self.generate_receipt_checkbox)
         
         layout.addWidget(form_group)
         
@@ -197,6 +205,10 @@ class PaymentDialog(QDialog):
             )
             
             if payment:
+                # Générer le PDF si demandé
+                if self.generate_receipt_checkbox.isChecked():
+                    self._generate_receipt_pdf(payment)
+                
                 QMessageBox.information(
                     self,
                     "Paiement enregistré",
@@ -208,3 +220,38 @@ class PaymentDialog(QDialog):
                 self.accept()
             else:
                 QMessageBox.critical(self, "Erreur", error)
+    
+    def _generate_receipt_pdf(self, payment):
+        """Génère et ouvre le reçu PDF."""
+        from src.repositories.student_repository import StudentRepository
+        repo = StudentRepository()
+        student = repo.get_by_id(payment.student_id)
+        
+        if not student:
+            return
+        
+        try:
+            generator = PDFGenerator()
+            from pathlib import Path
+            output_path = Path.home() / "Desktop" / f"recu_{payment.numero_recu}.pdf"
+            generator.generate_receipt(payment, student, output_path)
+            
+            # Ouvrir le PDF
+            self._open_file(output_path)
+            
+        except Exception as e:
+            QMessageBox.warning(self, "Avertissement", 
+                               f"Le PDF n'a pas pu être généré : {str(e)}")
+    
+    def _open_file(self, file_path):
+        """Ouvre un fichier avec l'application par défaut du système."""
+        try:
+            if platform.system() == 'Windows':
+                subprocess.Popen(['start', '', str(file_path)], shell=True)
+            elif platform.system() == 'Darwin':  # macOS
+                subprocess.Popen(['open', str(file_path)])
+            else:  # Linux
+                subprocess.Popen(['xdg-open', str(file_path)])
+        except Exception as e:
+            QMessageBox.warning(self, "Avertissement", 
+                               f"Le fichier n'a pas pu être ouvert : {str(e)}")
