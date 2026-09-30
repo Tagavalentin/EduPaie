@@ -75,6 +75,12 @@ class StudentsView(QWidget):
         self.btn_delete.setEnabled(False)
         layout.addWidget(self.btn_delete)
         
+        # Bouton Enregistrer paiement
+        self.btn_payment = QPushButton("Enregistrer paiement")
+        self.btn_payment.clicked.connect(self._on_payment)
+        self.btn_payment.setEnabled(False)
+        layout.addWidget(self.btn_payment)
+        
         layout.addStretch()
         
         # Recherche
@@ -148,6 +154,7 @@ class StudentsView(QWidget):
         has_selection = self.table.selectionModel().hasSelection()
         self.btn_edit.setEnabled(has_selection)
         self.btn_delete.setEnabled(has_selection)
+        self.btn_payment.setEnabled(has_selection)
     
     def _on_add(self):
         """Gère le clic sur le bouton Ajouter."""
@@ -201,6 +208,21 @@ class StudentsView(QWidget):
             from src.repositories.student_repository import StudentRepository
             repo = StudentRepository()
             repo.delete(student.id)
+            self._load_students()
+    
+    def _on_payment(self):
+        """Gère le clic sur le bouton Enregistrer paiement."""
+        selected_rows = self.table.selectionModel().selectedRows()
+        if not selected_rows:
+            return
+        
+        row = selected_rows[0].row()
+        student_data = self.current_students[row]
+        student = student_data['student']
+        
+        from src.ui.payment_dialog import PaymentDialog
+        dialog = PaymentDialog(self, student.id)
+        if dialog.exec():
             self._load_students()
     
     def _on_search(self, text: str):
@@ -272,6 +294,12 @@ class StudentsView(QWidget):
         action_view = QAction("Voir les détails", self)
         action_view.triggered.connect(self._on_view_details)
         menu.addAction(action_view)
+        
+        action_payment = QAction("Enregistrer un paiement", self)
+        action_payment.triggered.connect(self._on_payment)
+        menu.addAction(action_payment)
+        
+        menu.addSeparator()
         
         action_edit = QAction("Modifier", self)
         action_edit.triggered.connect(self._on_edit)
