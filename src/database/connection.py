@@ -2,10 +2,7 @@ import sqlite3
 from pathlib import Path
 from typing import Optional
 
-
-def get_db_path() -> Path:
-    """Retourne le chemin vers la base de données."""
-    return Path(__file__).parent.parent.parent / "data" / "edupaie.db"
+from src.utils.paths import get_db_path
 
 
 def get_connection() -> sqlite3.Connection:

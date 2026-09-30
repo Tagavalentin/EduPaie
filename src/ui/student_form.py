@@ -4,6 +4,7 @@ from PySide6.QtCore import Qt
 
 from src.models.student import Student
 from src.repositories.student_repository import StudentRepository
+from src.utils.error_handler import log_info, log_error
 
 
 class StudentForm(QDialog):
@@ -153,6 +154,7 @@ class StudentForm(QDialog):
                 self.student.annee_scolaire = annee
                 self.student.total_du = total
                 self.repo.update(self.student)
+                log_info(f"Élève modifié : {nom} {prenom} (ID: {self.student.id})")
             else:
                 # Création
                 student = Student(
@@ -164,8 +166,10 @@ class StudentForm(QDialog):
                     total_du=total
                 )
                 self.repo.create(student)
+                log_info(f"Élève créé : {nom} {prenom} (ID: {student.id})")
             
             self.accept()
             
         except Exception as e:
+            log_error(f"Erreur lors de l'enregistrement de l'élève : {str(e)}")
             QMessageBox.critical(self, "Erreur", f"Erreur lors de l'enregistrement : {str(e)}")

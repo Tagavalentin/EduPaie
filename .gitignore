@@ -36,6 +36,7 @@ ENV/
 # Logs
 *.log
 logs/
+.edupaie/
 
 # Database
 data/*.db

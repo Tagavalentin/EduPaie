@@ -1,6 +1,7 @@
 import sqlite3
 from pathlib import Path
-from .connection import get_connection, get_db_path
+from .connection import get_connection
+from src.utils.paths import get_base_path
 
 
 def init_database() -> None:
@@ -8,8 +9,9 @@ def init_database() -> None:
     Initialise la base de données avec le schéma et les données de test.
     Crée les tables si elles n'existent pas.
     """
-    schema_path = Path(__file__).parent.parent.parent / "sql" / "schema.sql"
-    seed_path = Path(__file__).parent.parent.parent / "sql" / "seed.sql"
+    base_path = get_base_path()
+    schema_path = base_path / "sql" / "schema.sql"
+    seed_path = base_path / "sql" / "seed.sql"
     
     conn = get_connection()
     cursor = conn.cursor()
@@ -39,6 +41,7 @@ def init_database() -> None:
             print(f"Fichier seed introuvable : {seed_path}")
         
         conn.commit()
+        from src.utils.paths import get_db_path
         print(f"Base de données initialisée : {get_db_path()}")
         
     except Exception as e:
