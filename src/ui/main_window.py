@@ -3,6 +3,7 @@ from PySide6.QtWidgets import (QMainWindow, QWidget, QVBoxLayout, QHBoxLayout,
 from PySide6.QtCore import Qt
 
 from src.ui.students_view import StudentsView
+from src.ui.dashboard_view import DashboardView
 
 
 class MainWindow(QMainWindow):
@@ -105,12 +106,8 @@ class MainWindow(QMainWindow):
     
     def _create_views(self):
         """Crée les différentes vues de l'application."""
-        # Vue Tableau de bord (placeholder)
-        self.dashboard_view = QWidget()
-        dashboard_layout = QVBoxLayout(self.dashboard_view)
-        dashboard_label = QLabel("Tableau de bord - En construction")
-        dashboard_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        dashboard_layout.addWidget(dashboard_label)
+        # Vue Tableau de bord
+        self.dashboard_view = DashboardView()
         self.stack.addWidget(self.dashboard_view)
         
         # Vue Élèves
@@ -124,6 +121,7 @@ class MainWindow(QMainWindow):
             self.stack.setCurrentWidget(self.dashboard_view)
             self.header_title.setText("Tableau de bord")
             self._update_active_button(self.btn_dashboard)
+            self.dashboard_view.refresh()
         elif view_name == "students":
             self.stack.setCurrentWidget(self.students_view)
             self.header_title.setText("Gestion des élèves")
