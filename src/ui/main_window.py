@@ -2,6 +2,8 @@ from PySide6.QtWidgets import (QMainWindow, QWidget, QVBoxLayout, QHBoxLayout,
                                  QPushButton, QStackedWidget, QLabel, QFrame)
 from PySide6.QtCore import Qt
 
+from src.ui.students_view import StudentsView
+
 
 class MainWindow(QMainWindow):
     """Fenêtre principale de l'application EduPaie."""
@@ -111,12 +113,9 @@ class MainWindow(QMainWindow):
         dashboard_layout.addWidget(dashboard_label)
         self.stack.addWidget(self.dashboard_view)
         
-        # Vue Élèves (placeholder)
-        self.students_view = QWidget()
-        students_layout = QVBoxLayout(self.students_view)
-        students_label = QLabel("Gestion des élèves - En construction")
-        students_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        students_layout.addWidget(students_label)
+        # Vue Élèves
+        self.students_view = StudentsView()
+        self.students_view.student_selected.connect(self._on_student_selected)
         self.stack.addWidget(self.students_view)
     
     def _show_view(self, view_name: str):
@@ -140,6 +139,12 @@ class MainWindow(QMainWindow):
                 btn.setProperty("active", False)
             btn.style().unpolish(btn)
             btn.style().polish(btn)
+    
+    def _on_student_selected(self, student_id: int):
+        """Gère la sélection d'un élève."""
+        # Pour l'instant, juste un placeholder
+        # La fiche élève sera implémentée dans la branche feature/fiche-eleve-historique
+        print(f"Élève sélectionné : {student_id}")
     
     def _apply_style(self):
         """Applique la feuille de style commune."""
