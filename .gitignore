@@ -4,9 +4,7 @@ __pycache__/
 *$py.class
 *.so
 .Python
-build/
 develop-eggs/
-dist/
 downloads/
 eggs/
 .eggs/
@@ -46,6 +44,9 @@ data/*.db-wal
 # Build
 *.spec
 !build/*.spec
+dist/
+build/
+!build/
 
 # OS
 .DS_Store
