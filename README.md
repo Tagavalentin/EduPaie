@@ -142,7 +142,7 @@ build\build.bat
 ```
 
 Ce script construit l'exécutable puis, si Inno Setup 6 est installé, génère
-`dist/installer/EduPaie-Setup.exe`. L'installateur s'installe pour l'utilisateur
+`dist/installer/EduPaie-Setup-1.0.1.exe`. L'installateur s'installe pour l'utilisateur
 courant, ajoute un raccourci au menu Démarrer et propose un raccourci sur le
 Bureau. Il ne supprime pas la base de données lors d'une mise à jour ou d'une
 désinstallation.

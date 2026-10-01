@@ -54,7 +54,7 @@ if defined ISCC_PATH (
         popd
         exit /b 1
     )
-    echo Installateur créé dans: dist\installer\EduPaie-Setup.exe
+    echo Installateur créé dans: dist\installer\EduPaie-Setup-1.0.1.exe
 ) else (
     echo AVERTISSEMENT: Inno Setup 6 n'est pas installé.
     echo L'exécutable est prêt, mais l'installateur n'a pas été généré.
@@ -62,4 +62,3 @@ if defined ISCC_PATH (
 )
 
 popd
-pause

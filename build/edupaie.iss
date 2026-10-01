@@ -1,5 +1,5 @@
 #define AppName "EduPaie"
-#define AppVersion "1.0.0"
+#define AppVersion "1.0.1"
 #define AppPublisher "EduPaie"
 #define AppExeName "EduPaie.exe"
 
@@ -8,6 +8,7 @@ AppId={{78F3112C-E974-43CE-AE55-DC848C78A252}
 AppName={#AppName}
 AppVersion={#AppVersion}
 AppPublisher={#AppPublisher}
+SetupIconFile=..\assets\edupaie.ico
 DefaultDirName={localappdata}\Programs\EduPaie
 DefaultGroupName={#AppName}
 DisableProgramGroupPage=yes
@@ -15,7 +16,7 @@ PrivilegesRequired=lowest
 UninstallDisplayName={#AppName}
 UninstallDisplayIcon={app}\{#AppExeName}
 OutputDir=..\dist\installer
-OutputBaseFilename=EduPaie-Setup
+OutputBaseFilename=EduPaie-Setup-{#AppVersion}
 Compression=lzma2
 SolidCompression=yes
 WizardStyle=modern

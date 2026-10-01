@@ -10,7 +10,8 @@
 
 ### Depuis l'installateur
 
-1. Téléchargez puis ouvrez `EduPaie-Setup.exe`.
+1. Téléchargez `EduPaie-Setup-1.0.1.exe` depuis les
+   [releases GitHub](https://github.com/Tagavalentin/EduPaie/releases), puis ouvrez-le.
 2. L'installation se fait pour votre compte Windows, sans droits administrateur,
    dans `%LOCALAPPDATA%\Programs\EduPaie`.
 3. Lancez EduPaie depuis le menu Démarrer. Un raccourci sur le Bureau peut être
@@ -25,7 +26,7 @@ Installez Python 3.10+ et Inno Setup 6, puis :
    ```
    build\build.bat
    ```
-3. L'installateur est créé dans `dist\installer\EduPaie-Setup.exe`.
+3. L'installateur est créé dans `dist\installer\EduPaie-Setup-1.0.1.exe`.
 
 ## Premier lancement
 
@@ -83,7 +84,7 @@ Pour supprimer aussi les données, fermez EduPaie puis supprimez séparément :
 Pour mettre à jour EduPaie :
 
 1. Fermez EduPaie.
-2. Exécutez le nouvel installateur `EduPaie-Setup.exe`.
+2. Téléchargez et exécutez la nouvelle version de `EduPaie-Setup-*.exe`.
 3. Gardez le même dossier d'installation afin de mettre à jour la version en
    place.
 4. Relancez EduPaie depuis le menu Démarrer.
@@ -119,7 +120,8 @@ Certains antivirus peuvent marquer l'exécutable comme suspect car il est géné
 
 1. Ajoutez une exception pour `EduPaie.exe`
 2. Ou désactivez temporairement l'antivirus pour l'installation
-3. L'application est signée numériquement (si disponible)
+3. Les versions publiées ne sont pas signées numériquement pour le moment.
+   Vérifiez que le fichier provient bien des releases officielles EduPaie.
 
 ## Configuration requise
 
