@@ -1,0 +1,62 @@
+name: Windows release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: windows-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.14"
+
+      - name: Verify release tag
+        shell: pwsh
+        run: |
+          $metadata = Get-Content build/version_info.txt -Raw
+          $match = [regex]::Match($metadata, "StringStruct\('ProductVersion', '([^']+)'\)")
+          if (-not $match.Success) { throw "ProductVersion is missing from build/version_info.txt" }
+          $expectedTag = "v$($match.Groups[1].Value)"
+          if ($env:GITHUB_REF_NAME -ne $expectedTag) { throw "Tag $env:GITHUB_REF_NAME does not match $expectedTag" }
+          $setup = Get-Content build/edupaie.iss -Raw
+          $setupMatch = [regex]::Match($setup, '#define AppVersion "([^"]+)"')
+          if (-not $setupMatch.Success -or $setupMatch.Groups[1].Value -ne $match.Groups[1].Value) { throw "Installer version does not match $expectedTag" }
+
+      - name: Install Python dependencies
+        run: python -m pip install -r requirements.txt
+
+      - name: Run test suite
+        env:
+          QT_QPA_PLATFORM: offscreen
+        run: python -m pytest -q
+
+      - name: Install Inno Setup
+        run: choco install innosetup --yes --no-progress
+
+      - name: Build executable and installer
+        run: build\build.bat
+
+      - name: Smoke test packaged executable
+        env:
+          EDUPAIE_EXE: ${{ github.workspace }}\dist\EduPaie.exe
+          QT_QPA_PLATFORM: offscreen
+        run: python -m pytest -q tests/test_packaged_app.py
+
+      - name: Publish release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: EduPaie ${{ github.ref_name }}
+          generate_release_notes: true
+          fail_on_unmatched_files: true
+          files: |
+            dist/installer/EduPaie-Setup-*.exe
+            docs/guide_installation.md
