@@ -25,8 +25,8 @@ class StudentsView(QWidget):
     def _setup_ui(self):
         """Configure l'interface utilisateur."""
         layout = QVBoxLayout(self)
-        layout.setContentsMargins(10, 10, 10, 10)
-        layout.setSpacing(10)
+        layout.setContentsMargins(0, 16, 0, 16)
+        layout.setSpacing(16)
         
         # Barre d'outils
         toolbar = self._create_toolbar()
@@ -38,14 +38,17 @@ class StudentsView(QWidget):
         self.table.setSelectionMode(QTableView.SelectionMode.SingleSelection)
         self.table.setEditTriggers(QTableView.EditTrigger.NoEditTriggers)
         self.table.setSortingEnabled(True)
+        self.table.setWordWrap(True)
         self.table.doubleClicked.connect(self._on_double_click)
         
         # Ajuster les colonnes
         header = self.table.horizontalHeader()
-        header.setSectionResizeMode(QHeaderView.ResizeMode.Interactive)
-        header.setStretchLastSection(True)
+        header.setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
+        vertical_header = self.table.verticalHeader()
+        vertical_header.setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
+        vertical_header.setMinimumSectionSize(40)
         
-        layout.addWidget(self.table)
+        layout.addWidget(self.table, stretch=1)
         
         # Menu contextuel
         self.table.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
@@ -55,7 +58,7 @@ class StudentsView(QWidget):
         """Crée la barre d'outils."""
         toolbar = QWidget()
         layout = QHBoxLayout(toolbar)
-        layout.setContentsMargins(0, 0, 0, 0)
+        layout.setContentsMargins(12, 0, 12, 0)
         layout.setSpacing(10)
         
         # Bouton Ajouter
@@ -120,8 +123,6 @@ class StudentsView(QWidget):
         if selection_model:
             selection_model.selectionChanged.connect(self._on_selection_changed)
         
-        # Ajuster la largeur des colonnes
-        self.table.resizeColumnsToContents()
     
     def _update_class_filter(self):
         """Met à jour la liste des classes dans le filtre."""

@@ -1,14 +1,12 @@
 from PySide6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QLabel, 
                                  QPushButton, QTableView, QHeaderView, QMessageBox,
                                  QGroupBox, QDialog)
-import subprocess
-import platform
 from PySide6.QtCore import Qt
 
 from src.services.student_service import StudentService, PaymentStatus
 from src.repositories.payment_repository import PaymentRepository
 from src.utils.formatters import format_fcfa
-from src.utils.pdf_generator import PDFGenerator
+from src.utils.pdf_generator import PDFGenerator, print_pdf_file
 
 
 class StudentDetail(QWidget):
@@ -95,20 +93,23 @@ class StudentDetail(QWidget):
         self.payments_table.setSelectionBehavior(QTableView.SelectionBehavior.SelectRows)
         self.payments_table.setSelectionMode(QTableView.SelectionMode.SingleSelection)
         self.payments_table.setEditTriggers(QTableView.EditTrigger.NoEditTriggers)
+        self.payments_table.setWordWrap(True)
         self.payments_table.doubleClicked.connect(self._on_double_click)
         
         header = self.payments_table.horizontalHeader()
-        header.setSectionResizeMode(QHeaderView.ResizeMode.Interactive)
-        header.setStretchLastSection(True)
+        header.setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
+        vertical_header = self.payments_table.verticalHeader()
+        vertical_header.setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
+        vertical_header.setMinimumSectionSize(40)
         
         history_layout.addWidget(self.payments_table)
         
-        # Bouton Revoir le reçu
+        # Bouton d'impression du reçu
         receipt_layout = QHBoxLayout()
         receipt_layout.addStretch()
         
-        self.btn_receipt = QPushButton("Revoir le reçu")
-        self.btn_receipt.clicked.connect(self._on_view_receipt)
+        self.btn_receipt = QPushButton("Imprimer le reçu")
+        self.btn_receipt.clicked.connect(self._on_print_receipt)
         self.btn_receipt.setEnabled(False)
         receipt_layout.addWidget(self.btn_receipt)
         
@@ -170,7 +171,6 @@ class StudentDetail(QWidget):
         from src.ui.payments_table_model import PaymentsTableModel
         model = PaymentsTableModel(payments)
         self.payments_table.setModel(model)
-        self.payments_table.resizeColumnsToContents()
         
         # Connecter le signal de sélection
         if self.payments_table.selectionModel():
@@ -209,8 +209,8 @@ class StudentDetail(QWidget):
         has_selection = self.payments_table.selectionModel().hasSelection()
         self.btn_receipt.setEnabled(has_selection)
     
-    def _on_view_receipt(self):
-        """Gère le clic sur le bouton Revoir le reçu."""
+    def _on_print_receipt(self):
+        """Envoie directement le reçu sélectionné à l'imprimante."""
         selected_rows = self.payments_table.selectionModel().selectedRows()
         if not selected_rows:
             return
@@ -221,7 +221,7 @@ class StudentDetail(QWidget):
         model = self.payments_table.model()
         payment = model.payments[row]
         
-        # Générer et ouvrir le reçu PDF
+        # Générer et afficher le reçu PDF
         self._generate_receipt_pdf(payment)
     
     def _generate_receipt_pdf(self, payment):
@@ -235,30 +235,20 @@ class StudentDetail(QWidget):
             return
         
         try:
-            generator = PDFGenerator()
-            from pathlib import Path
-            output_path = Path.home() / "Desktop" / f"recu_{payment.numero_recu}.pdf"
-            generator.generate_receipt(payment, student, output_path)
-            
-            # Ouvrir le PDF
-            self._open_file(output_path)
-            
+            output_path = PDFGenerator().generate_receipt(payment, student)
         except Exception as e:
             QMessageBox.warning(self, "Avertissement", 
-                               f"Le PDF n'a pas pu être généré : {str(e)}")
-    
-    def _open_file(self, file_path):
-        """Ouvre un fichier avec l'application par défaut du système."""
+                               f"Le reçu PDF n'a pas pu être créé : {str(e)}")
+            return
+
         try:
-            if platform.system() == 'Windows':
-                subprocess.Popen(['start', '', str(file_path)], shell=True)
-            elif platform.system() == 'Darwin':  # macOS
-                subprocess.Popen(['open', str(file_path)])
-            else:  # Linux
-                subprocess.Popen(['xdg-open', str(file_path)])
+            print_pdf_file(output_path)
         except Exception as e:
-            QMessageBox.warning(self, "Avertissement", 
-                               f"Le fichier n'a pas pu être ouvert : {str(e)}")
+            QMessageBox.warning(
+                self,
+                "Impression impossible",
+                f"Le reçu a été créé ici : {output_path}\n\nImpossible de l'imprimer : {e}"
+            )
     
     def _on_close(self):
         """Gère le clic sur le bouton Fermer."""

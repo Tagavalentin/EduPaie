@@ -8,8 +8,8 @@ EduPaie est une application de gestion des paiements scolaires pour les écoles.
 
 Au premier lancement, l'application :
 1. Crée automatiquement la base de données
-2. Insère des données de test (15 élèves avec paiements variés)
-3. Initialise le système de numérotation des reçus
+2. Crée les tables nécessaires sans insérer d'élèves de démonstration
+3. Prépare le système de numérotation des reçus
 
 ## Interface principale
 
@@ -99,24 +99,23 @@ La fiche élève affiche :
    - **Date du paiement** : Date du versement
    - **Mode de paiement** : Espèces, Chèque, Virement ou Mobile Money
 4. Le solde avant et après paiement s'affiche en temps réel
-5. Cochez **Générer le reçu PDF** pour obtenir le reçu automatiquement
-6. Cliquez sur **Enregistrer**
-7. Confirmez le paiement
+5. Cliquez sur **Enregistrer**
+6. Confirmez le paiement
 
-Le reçu PDF s'ouvre automatiquement et est enregistré sur votre bureau.
+Le reçu PDF est envoyé à l'imprimante par défaut après validation et enregistré dans `data/recus_pdf`. Dans la version installée, il se trouve dans le dossier de données utilisateur EduPaie.
 
 ### Règles de validation
 
 - Le montant doit être un entier positif
 - Le montant ne peut pas dépasser le solde restant
 - La date doit être valide
-- Le mode de paiement doit être choisi
+- Le mode de paiement doit être choisi parmi les quatre modes proposés
 
 ### Réimprimer un reçu
 
 1. Ouvrez la fiche de l'élève
 2. Dans l'historique des paiements, sélectionnez le paiement
-3. Cliquez sur le bouton **Revoir le reçu**
+3. Cliquez sur le bouton **Imprimer le reçu**
 
 Le reçu sera régénéré à l'identique et ouvert.
 

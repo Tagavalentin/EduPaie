@@ -1,7 +1,7 @@
 from PySide6.QtCore import QAbstractTableModel, Qt
 from typing import List, Any
 
-from src.utils.formatters import format_fcfa
+from src.utils.formatters import format_fcfa, format_payment_mode
 
 
 class PaymentsTableModel(QAbstractTableModel):
@@ -34,13 +34,7 @@ class PaymentsTableModel(QAbstractTableModel):
                 return format_fcfa(payment.montant)
             elif col == 2:  # Mode
                 # Formater le mode de paiement
-                mode_map = {
-                    'especes': 'Espèces',
-                    'cheque': 'Chèque',
-                    'virement': 'Virement',
-                    'mobile_money': 'Mobile Money'
-                }
-                return mode_map.get(payment.mode_paiement, payment.mode_paiement)
+                return format_payment_mode(payment.mode_paiement)
             elif col == 3:  # Numéro de reçu
                 return payment.numero_recu
             elif col == 4:  # Solde après

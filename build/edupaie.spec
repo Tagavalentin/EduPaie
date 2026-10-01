@@ -1,19 +1,23 @@
 # -*- mode: python ; coding: utf-8 -*-
 
+from pathlib import Path
+
 block_cipher = None
+project_root = Path(SPECPATH).resolve().parent
 
 a = Analysis(
-    ['main.py'],
-    pathex=[],
+    [str(project_root / 'main.py')],
+    pathex=[str(project_root)],
     binaries=[],
     datas=[
-        ('sql', 'sql'),
-        ('data', 'data'),
+        (str(project_root / 'sql'), 'sql'),
     ],
     hiddenimports=[
         'PySide6.QtCore',
         'PySide6.QtGui',
         'PySide6.QtWidgets',
+        'PySide6.QtPdf',
+        'PySide6.QtPdfWidgets',
         'reportlab',
         'reportlab.pdfgen',
         'reportlab.lib',

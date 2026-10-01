@@ -6,38 +6,38 @@
 - 100 Mo d'espace disque libre
 - Permissions d'écriture dans le dossier utilisateur
 
-## Installation
+## Installation de l'application
 
-### Option 1 : Télécharger l'exécutable
+### Depuis l'installateur
 
-1. Téléchargez le fichier `EduPaie.exe` depuis le dépôt ou le lien fourni
-2. Placez-le dans un dossier de votre choix (ex: `C:\Program Files\EduPaie`)
-3. Double-cliquez sur `EduPaie.exe` pour lancer l'application
+1. Téléchargez puis ouvrez `EduPaie-Setup.exe`.
+2. L'installation se fait pour votre compte Windows, sans droits administrateur,
+   dans `%LOCALAPPDATA%\Programs\EduPaie`.
+3. Lancez EduPaie depuis le menu Démarrer. Un raccourci sur le Bureau peut être
+   sélectionné pendant l'installation.
 
-### Option 2 : À partir du code source
+### Construire l'installateur depuis les sources
 
-Si vous avez le code source, vous pouvez construire l'exécutable vous-même :
+Installez Python 3.10+ et Inno Setup 6, puis :
 
-1. Assurez-vous d'avoir Python 3.10+ installé
-2. Naviguez vers le dossier du projet
-3. Exécutez le script de build :
+1. Ouvrez le dossier du projet.
+2. Exécutez le script de build :
    ```
    build\build.bat
    ```
-4. L'exécutable sera généré dans le dossier `dist/`
-5. Copiez `dist\EduPaie.exe` vers le dossier d'installation souhaité
+3. L'installateur est créé dans `dist\installer\EduPaie-Setup.exe`.
 
 ## Premier lancement
 
 Au premier lancement :
 
 1. L'application créera automatiquement les dossiers nécessaires :
-   - `%LOCALAPPDATA%\EduPaie\` pour les données
+   - `%LOCALAPPDATA%\EduPaie\` pour la base et les reçus
    - `%USERPROFILE%\.edupaie\logs\` pour les logs
 
 2. La base de données sera initialisée avec :
    - Le schéma des tables
-   - 15 élèves de test avec paiements variés
+   - Aucun élève de démonstration ; vous pourrez saisir les élèves de l'établissement
 
 3. Vous verrez la fenêtre principale avec le tableau de bord
 
@@ -69,22 +69,27 @@ Pour restaurer :
 
 ## Désinstallation
 
-Pour désinstaller EduPaie :
+Dans **Paramètres Windows > Applications > Applications installées**, choisissez
+EduPaie puis **Désinstaller**. Le désinstalleur retire l'application et ses
+raccourcis, mais conserve la base et les reçus dans `%LOCALAPPDATA%\EduPaie\`.
 
-1. Supprimez le fichier `EduPaie.exe`
-2. Supprimez le dossier de données si vous ne voulez plus conserver vos données :
-   - `%LOCALAPPDATA%\EduPaie\`
-   - `%USERPROFILE%\.edupaie\`
+Pour supprimer aussi les données, fermez EduPaie puis supprimez séparément :
+
+- `%LOCALAPPDATA%\EduPaie\`
+- `%USERPROFILE%\.edupaie\`
 
 ## Mise à jour
 
 Pour mettre à jour EduPaie :
 
-1. Téléchargez la nouvelle version de `EduPaie.exe`
-2. Remplacez l'ancien fichier par le nouveau
-3. Relancez l'application
+1. Fermez EduPaie.
+2. Exécutez le nouvel installateur `EduPaie-Setup.exe`.
+3. Gardez le même dossier d'installation afin de mettre à jour la version en
+   place.
+4. Relancez EduPaie depuis le menu Démarrer.
 
-**Note** : Vos données sont conservées automatiquement car elles sont stockées dans le dossier utilisateur, pas dans le dossier de l'exécutable.
+**Note** : la base et les reçus restent dans `%LOCALAPPDATA%\EduPaie\`, séparés
+des fichiers remplacés par l'installation.
 
 ## Problèmes courants
 

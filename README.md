@@ -30,7 +30,13 @@ pip install -r requirements.txt
 python -m src.database.init_db
 ```
 
-Cela créera la base de données `data/edupaie.db` avec le schéma et des données de test (15 élèves).
+Cela crée une base vide dans `data/edupaie.db`, prête à recevoir les données de l'établissement.
+
+Pour charger les données de démonstration (15 élèves) dans une base vide :
+
+```bash
+python -m src.database.init_db --demo-data
+```
 
 ## Lancement
 
@@ -119,14 +125,15 @@ pytest -v
 ### Prérequis
 
 - PyInstaller (inclus dans requirements.txt)
+- Inno Setup 6 pour générer l'installateur Windows
 
 ### Build manuel
 
 ```bash
-pyinstaller build/edupaie.spec --onefile --windowed
+pyinstaller build/edupaie.spec
 ```
 
-L'exécutable sera généré dans le dossier `dist/`.
+L'exécutable sera généré dans `dist/EduPaie.exe`.
 
 ### Build avec le script automatisé
 
@@ -134,11 +141,14 @@ L'exécutable sera généré dans le dossier `dist/`.
 build\build.bat
 ```
 
-Ce script :
-1. Vérifie que PyInstaller est installé
-2. Initialise la base de données si nécessaire
-3. Lance le build PyInstaller
-4. Affiche le résultat
+Ce script construit l'exécutable puis, si Inno Setup 6 est installé, génère
+`dist/installer/EduPaie-Setup.exe`. L'installateur s'installe pour l'utilisateur
+courant, ajoute un raccourci au menu Démarrer et propose un raccourci sur le
+Bureau. Il ne supprime pas la base de données lors d'une mise à jour ou d'une
+désinstallation.
+
+Si Inno Setup n'est pas installé, le script produit quand même l'exécutable et
+signale que l'installateur n'a pas été généré.
 
 ## Architecture
 

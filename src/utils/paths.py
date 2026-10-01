@@ -1,4 +1,5 @@
 import sys
+import os
 from pathlib import Path
 from datetime import datetime
 
@@ -23,10 +24,10 @@ def get_data_path() -> Path:
     """
     if getattr(sys, 'frozen', False):
         # Application packagée : utiliser un dossier utilisateur
-        from pathlib import Path
-        import os
         if os.name == 'nt':  # Windows
-            data_path = Path.home() / "AppData" / "Local" / "EduPaie"
+            local_app_data = os.environ.get("LOCALAPPDATA")
+            base_path = Path(local_app_data) if local_app_data else Path.home() / "AppData" / "Local"
+            data_path = base_path / "EduPaie"
         else:  # macOS/Linux
             data_path = Path.home() / ".edupaie"
     else:

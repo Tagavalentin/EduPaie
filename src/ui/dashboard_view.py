@@ -25,11 +25,13 @@ class DashboardView(QWidget):
     def _setup_ui(self):
         """Configure l'interface utilisateur."""
         layout = QVBoxLayout(self)
-        layout.setContentsMargins(10, 10, 10, 10)
-        layout.setSpacing(15)
+        layout.setContentsMargins(20, 20, 20, 20)
+        layout.setSpacing(20)
         
         # Cartes de statistiques
         stats_layout = QGridLayout()
+        stats_layout.setHorizontalSpacing(16)
+        stats_layout.setVerticalSpacing(16)
         
         # Carte 1: Nombre d'élèves
         self.card_students, self.card_students_value = self._create_stat_card("Nombre d'élèves", "0", "#3498db")
@@ -75,10 +77,13 @@ class DashboardView(QWidget):
         self.table.setSelectionMode(QTableView.SelectionMode.SingleSelection)
         self.table.setEditTriggers(QTableView.EditTrigger.NoEditTriggers)
         self.table.setSortingEnabled(True)
+        self.table.setWordWrap(True)
         
         header = self.table.horizontalHeader()
-        header.setSectionResizeMode(QHeaderView.ResizeMode.Interactive)
-        header.setStretchLastSection(True)
+        header.setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
+        vertical_header = self.table.verticalHeader()
+        vertical_header.setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
+        vertical_header.setMinimumSectionSize(40)
         
         list_layout.addWidget(self.table)
         
@@ -103,7 +108,7 @@ class DashboardView(QWidget):
         """)
         
         layout = QVBoxLayout(card)
-        layout.setContentsMargins(10, 20, 10, 10)
+        layout.setContentsMargins(16, 24, 16, 16)
         
         card_title = QLabel(title)
         card_title.setStyleSheet(f"color: {color}; font-size: 14px;")
@@ -144,7 +149,6 @@ class DashboardView(QWidget):
         from src.ui.students_table_model import StudentsTableModel
         model = StudentsTableModel(students_data)
         self.table.setModel(model)
-        self.table.resizeColumnsToContents()
     
     def _on_filter_changed(self, text: str):
         """Gère le changement de filtre."""

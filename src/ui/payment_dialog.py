@@ -1,14 +1,12 @@
 from PySide6.QtWidgets import (QDialog, QVBoxLayout, QHBoxLayout, QLabel, 
                                  QSpinBox, QDateEdit, QComboBox, QPushButton, 
-                                 QMessageBox, QGroupBox, QCheckBox)
+                                 QMessageBox, QGroupBox)
 from PySide6.QtCore import Qt, QDate
-import subprocess
-import platform
 
 from src.services.payment_service import PaymentService
 from src.services.student_service import StudentService
 from src.utils.formatters import format_fcfa
-from src.utils.pdf_generator import PDFGenerator
+from src.utils.pdf_generator import PDFGenerator, print_pdf_file
 
 
 class PaymentDialog(QDialog):
@@ -79,15 +77,13 @@ class PaymentDialog(QDialog):
         mode_label = QLabel("Mode de paiement *:")
         mode_label.setFixedWidth(150)
         self.mode_input = QComboBox()
-        self.mode_input.addItems(["Espèces", "Chèque", "Virement", "Mobile Money"])
+        self.mode_input.addItem("Espèces", "especes")
+        self.mode_input.addItem("Chèque", "cheque")
+        self.mode_input.addItem("Virement", "virement")
+        self.mode_input.addItem("Mobile Money", "mobile_money")
         mode_layout.addWidget(mode_label)
         mode_layout.addWidget(self.mode_input)
         form_layout.addLayout(mode_layout)
-        
-        # Générer le reçu
-        self.generate_receipt_checkbox = QCheckBox("Générer le reçu PDF")
-        self.generate_receipt_checkbox.setChecked(True)
-        form_layout.addWidget(self.generate_receipt_checkbox)
         
         layout.addWidget(form_group)
         
@@ -153,11 +149,18 @@ class PaymentDialog(QDialog):
         else:
             self.balance_after_label.setStyleSheet("font-size: 16px; font-weight: bold; color: #e74c3c;")
     
+    def _get_payment_mode(self) -> str:
+        mode_text = self.mode_input.currentText().strip()
+        item_index = self.mode_input.findText(mode_text, Qt.MatchFlag.MatchFixedString)
+        if item_index >= 0:
+            return self.mode_input.itemData(item_index)
+        return "_".join(mode_text.lower().split())
+
     def _validate(self):
         """Valide les champs du formulaire."""
         amount = self.amount_input.value()
         date = self.date_input.date().toString("yyyy-MM-dd")
-        mode = self.mode_input.currentText().lower().replace(" ", "_")
+        mode = self._get_payment_mode()
         
         # Valider le montant
         is_valid, error_msg = self.payment_service.validate_payment_amount(amount, self.student_id)
@@ -166,6 +169,10 @@ class PaymentDialog(QDialog):
         
         # Valider la date
         is_valid, error_msg = self.payment_service.validate_payment_date(date)
+        if not is_valid:
+            return False, error_msg
+
+        is_valid, error_msg = self.payment_service.validate_payment_mode(mode)
         if not is_valid:
             return False, error_msg
         
@@ -181,7 +188,7 @@ class PaymentDialog(QDialog):
         
         amount = self.amount_input.value()
         date = self.date_input.date().toString("yyyy-MM-dd")
-        mode = self.mode_input.currentText().lower().replace(" ", "_")
+        mode = self._get_payment_mode()
         
         # Confirmation
         balance = self.student_service.calculate_balance(self.student_id)
@@ -205,10 +212,6 @@ class PaymentDialog(QDialog):
             )
             
             if payment:
-                # Générer le PDF si demandé
-                if self.generate_receipt_checkbox.isChecked():
-                    self._generate_receipt_pdf(payment)
-                
                 QMessageBox.information(
                     self,
                     "Paiement enregistré",
@@ -218,6 +221,7 @@ class PaymentDialog(QDialog):
                     f"Solde après: {format_fcfa(payment.solde_apres)}"
                 )
                 self.accept()
+                self._generate_receipt_pdf(payment)
             else:
                 QMessageBox.critical(self, "Erreur", error)
     
@@ -231,27 +235,18 @@ class PaymentDialog(QDialog):
             return
         
         try:
-            generator = PDFGenerator()
-            from pathlib import Path
-            output_path = Path.home() / "Desktop" / f"recu_{payment.numero_recu}.pdf"
-            generator.generate_receipt(payment, student, output_path)
-            
-            # Ouvrir le PDF
-            self._open_file(output_path)
-            
+            output_path = PDFGenerator().generate_receipt(payment, student)
         except Exception as e:
             QMessageBox.warning(self, "Avertissement", 
-                               f"Le PDF n'a pas pu être généré : {str(e)}")
-    
-    def _open_file(self, file_path):
-        """Ouvre un fichier avec l'application par défaut du système."""
+                               f"Le reçu PDF n'a pas pu être créé : {str(e)}")
+            return
+
         try:
-            if platform.system() == 'Windows':
-                subprocess.Popen(['start', '', str(file_path)], shell=True)
-            elif platform.system() == 'Darwin':  # macOS
-                subprocess.Popen(['open', str(file_path)])
-            else:  # Linux
-                subprocess.Popen(['xdg-open', str(file_path)])
+            print_pdf_file(output_path)
         except Exception as e:
-            QMessageBox.warning(self, "Avertissement", 
-                               f"Le fichier n'a pas pu être ouvert : {str(e)}")
+            QMessageBox.warning(
+                self,
+                "Impression impossible",
+                f"Le reçu a été créé ici : {output_path}\n\nImpossible de l'imprimer : {e}"
+            )
+

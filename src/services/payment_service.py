@@ -59,6 +59,13 @@ class PaymentService:
             return True, ""
         except ValueError:
             return False, "La date doit être au format JJ/MM/AAAA."
+
+    def validate_payment_mode(self, mode_paiement: str) -> Tuple[bool, str]:
+        """Vérifie que le mode de paiement est pris en charge."""
+        valid_modes = {"especes", "cheque", "virement", "mobile_money"}
+        if not isinstance(mode_paiement, str) or mode_paiement.strip().lower() not in valid_modes:
+            return False, "Mode invalide. Choisissez Espèces, Chèque, Virement ou Mobile Money."
+        return True, ""
     
     def generate_receipt_number(self, year: int) -> str:
         """
@@ -117,10 +124,11 @@ class PaymentService:
         if not is_valid:
             return None, error_msg
         
-        # Valider le mode de paiement
-        valid_modes = ['especes', 'cheque', 'virement', 'mobile_money']
-        if mode_paiement not in valid_modes:
-            return None, f"Mode de paiement invalide. Modes autorisés : {', '.join(valid_modes)}."
+        is_valid, error_msg = self.validate_payment_mode(mode_paiement)
+        if not is_valid:
+            return None, error_msg
+
+        mode_paiement = mode_paiement.strip().lower()
         
         # Calculer le solde après paiement
         from src.services.student_service import StudentService

@@ -1,3 +1,6 @@
+import os
+import platform
+import subprocess
 from reportlab.lib.pagesizes import A4
 from reportlab.lib.units import cm
 from reportlab.lib import colors
@@ -7,7 +10,8 @@ from reportlab.pdfbase.ttfonts import TTFont
 from pathlib import Path
 from typing import Optional
 
-from src.utils.formatters import format_fcfa
+from src.utils.formatters import format_fcfa, format_payment_mode
+from src.utils.paths import get_data_path
 
 
 def montant_en_lettres(n: int) -> str:
@@ -22,6 +26,18 @@ def montant_en_lettres(n: int) -> str:
     """
     from num2words import num2words
     return num2words(n, lang='fr').capitalize() + " francs CFA"
+
+
+def print_pdf_file(pdf_path: Path) -> None:
+    """Envoie un PDF à l'imprimante par défaut du système."""
+    pdf_path = Path(pdf_path).resolve()
+    if not pdf_path.is_file():
+        raise FileNotFoundError(f"Fichier PDF introuvable : {pdf_path}")
+
+    if platform.system() == "Windows":
+        os.startfile(str(pdf_path), "print")
+    else:
+        subprocess.run(["lp", str(pdf_path)], check=True)
 
 
 class PDFGenerator:
@@ -44,7 +60,8 @@ class PDFGenerator:
             Le chemin du fichier PDF généré
         """
         if output_path is None:
-            output_path = Path.home() / "Desktop" / f"recu_{payment.numero_recu}.pdf"
+            output_path = get_data_path() / "recus_pdf" / f"recu_{payment.numero_recu}.pdf"
+        output_path.parent.mkdir(parents=True, exist_ok=True)
         
         c = canvas.Canvas(str(output_path), pagesize=A4)
         
@@ -130,7 +147,7 @@ class PDFGenerator:
         
         c.setFont("Helvetica", 12)
         c.drawString(self.margin + 0.5 * cm, y - 1.2 * cm, f"Date : {payment.date_paiement}")
-        c.drawString(self.margin + 0.5 * cm, y - 1.9 * cm, f"Mode de paiement : {payment.mode_paiement.capitalize()}")
+        c.drawString(self.margin + 0.5 * cm, y - 1.9 * cm, f"Mode de paiement : {format_payment_mode(payment.mode_paiement)}")
         
         # Montant
         c.setFont("Helvetica-Bold", 16)

@@ -12,7 +12,7 @@ class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("EduPaie - Gestion des paiements scolaires")
-        self.setMinimumSize(1024, 768)
+        self.setMinimumSize(960, 640)
         
         # Widget central
         central_widget = QWidget()

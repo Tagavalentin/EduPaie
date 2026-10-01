@@ -8,6 +8,7 @@ from src.repositories.student_repository import StudentRepository
 from src.repositories.payment_repository import PaymentRepository
 from src.models.student import Student
 from src.models.payment import Payment
+from src.database.init_db import _migrate_payment_modes
 
 
 @pytest.fixture
@@ -71,6 +72,8 @@ def services(in_memory_db, monkeypatch):
     monkeypatch.setattr(student_repo_module, 'close_connection', lambda conn: None)
     monkeypatch.setattr(payment_repo_module, 'get_connection', lambda: in_memory_db)
     monkeypatch.setattr(payment_repo_module, 'close_connection', lambda conn: None)
+    monkeypatch.setattr(payment_service_module, 'get_connection', lambda: in_memory_db)
+    monkeypatch.setattr(payment_service_module, 'close_connection', lambda conn: None)
     monkeypatch.setattr(connection_module, 'get_connection', lambda: in_memory_db)
     monkeypatch.setattr(connection_module, 'close_connection', lambda conn: None)
     
@@ -316,15 +319,69 @@ def test_create_payment_invalid_date(services, student_id):
 
 
 def test_create_payment_invalid_mode(services, student_id):
-    """Test la création d'un paiement avec mode invalide."""
+    """Test le refus d'un mode qui n'est pas dans la liste autorisée."""
     _, payment_service = services
     
     payment, error = payment_service.create_payment(
         student_id=student_id,
         amount=50000,
         date_paiement="2025-09-15",
-        mode_paiement="carte"
+        mode_paiement="carte_bancaire"
     )
     
     assert payment is None
-    assert "invalide" in error.lower()
+    assert "mode invalide" in error.lower()
+
+
+@pytest.mark.parametrize("mode", ["especes", "cheque", "virement", "mobile_money"])
+def test_create_payment_allowed_modes(services, student_id, mode):
+    _, payment_service = services
+
+    payment, error = payment_service.create_payment(
+        student_id=student_id,
+        amount=50000,
+        date_paiement="2025-09-15",
+        mode_paiement=mode
+    )
+
+    assert payment is not None
+    assert payment.mode_paiement == mode
+    assert error == ""
+
+
+def test_migrate_loose_payment_modes_preserves_existing_payments():
+    conn = sqlite3.connect(":memory:")
+    conn.executescript("""
+        CREATE TABLE students (
+            id INTEGER PRIMARY KEY,
+            nom TEXT NOT NULL,
+            prenom TEXT NOT NULL,
+            classe TEXT NOT NULL,
+            annee_scolaire TEXT NOT NULL,
+            total_du INTEGER NOT NULL
+        );
+        INSERT INTO students VALUES (1, 'Test', 'Eleve', '6ème A', '2025-2026', 100000);
+        CREATE TABLE payments (
+            id INTEGER PRIMARY KEY,
+            student_id INTEGER NOT NULL,
+            montant INTEGER NOT NULL,
+            date_paiement TEXT NOT NULL,
+            mode_paiement TEXT NOT NULL CHECK (length(trim(mode_paiement)) > 0),
+            numero_recu TEXT UNIQUE NOT NULL,
+            solde_apres INTEGER NOT NULL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (student_id) REFERENCES students(id)
+        );
+        INSERT INTO payments (id, student_id, montant, date_paiement, mode_paiement, numero_recu, solde_apres)
+        VALUES (1, 1, 25000, '2025-09-15', 'especes', 'REC-001', 75000);
+    """)
+
+    _migrate_payment_modes(conn)
+
+    assert conn.execute("SELECT mode_paiement FROM payments WHERE id = 1").fetchone()[0] == "especes"
+    with pytest.raises(sqlite3.IntegrityError):
+        conn.execute(
+            "INSERT INTO payments (student_id, montant, date_paiement, mode_paiement, numero_recu, solde_apres) "
+            "VALUES (1, 25000, '2025-09-15', 'carte_bancaire', 'REC-002', 50000)"
+        )
+    conn.close()
