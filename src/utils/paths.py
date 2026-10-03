@@ -3,7 +3,6 @@ import os
 from pathlib import Path
 from datetime import datetime
 
-
 def get_base_path() -> Path:
     """
     Retourne le chemin de base de l'application.
@@ -16,7 +15,6 @@ def get_base_path() -> Path:
         # En développement
         return Path(__file__).parent.parent.parent
 
-
 def get_data_path() -> Path:
     """
     Retourne le chemin vers le dossier des données.
@@ -24,6 +22,8 @@ def get_data_path() -> Path:
     """
     if getattr(sys, 'frozen', False):
         # Application packagée : utiliser un dossier utilisateur
+        from pathlib import Path
+        import os
         if os.name == 'nt':  # Windows
             local_app_data = os.environ.get("LOCALAPPDATA")
             base_path = Path(local_app_data) if local_app_data else Path.home() / "AppData" / "Local"
@@ -37,7 +37,6 @@ def get_data_path() -> Path:
     data_path.mkdir(parents=True, exist_ok=True)
     return data_path
 
-
 def get_log_file_path() -> Path:
     """
     Retourne le chemin vers le fichier de log.
@@ -46,7 +45,6 @@ def get_log_file_path() -> Path:
     log_dir.mkdir(parents=True, exist_ok=True)
     
     return log_dir / f"edupaie_{datetime.now().strftime('%Y%m%d')}.log"
-
 
 def get_db_path() -> Path:
     """

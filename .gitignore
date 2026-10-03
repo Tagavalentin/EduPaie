@@ -36,8 +36,10 @@ ENV/
 logs/
 .edupaie/
 
-# Runtime data
-data/
+# Database
+data/*.db
+data/*.db-shm
+data/*.db-wal
 
 # Build
 *.spec
@@ -45,7 +47,6 @@ data/
 dist/
 build/
 !build/
-build/edupaie/
 
 # OS
 .DS_Store

@@ -249,4 +249,4 @@ class PaymentDialog(QDialog):
                 "Impression impossible",
                 f"Le reçu a été créé ici : {output_path}\n\nImpossible de l'imprimer : {e}"
             )
-
+    

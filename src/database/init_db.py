@@ -1,7 +1,6 @@
 import sqlite3
 from pathlib import Path
 import re
-import argparse
 from .connection import get_connection
 from src.utils.paths import get_base_path
 
@@ -53,9 +52,10 @@ def _migrate_payment_modes(conn: sqlite3.Connection) -> None:
     conn.execute("CREATE INDEX IF NOT EXISTS idx_payments_numero_recu ON payments(numero_recu)")
 
 
-def init_database(include_demo_data: bool = False) -> None:
+def init_database() -> None:
     """
-    Initialise le schéma et ajoute les données de démonstration sur demande.
+    Initialise la base de données avec le schéma et les données de test.
+    Crée les tables si elles n'existent pas.
     """
     base_path = get_base_path()
     schema_path = base_path / "sql" / "schema.sql"
@@ -76,22 +76,19 @@ def init_database(include_demo_data: bool = False) -> None:
 
         _migrate_payment_modes(conn)
 
-        # Ne charger les données de démonstration que sur demande.
+        # Exécuter les données de test (seulement si la base est vide)
         cursor.execute("SELECT COUNT(*) FROM students")
         student_count = cursor.fetchone()[0]
         
-        if student_count == 0 and include_demo_data:
-            if seed_path.exists():
-                with open(seed_path, 'r', encoding='utf-8') as f:
-                    seed_sql = f.read()
-                    cursor.executescript(seed_sql)
-                print("Données de démonstration insérées avec succès.")
-            else:
-                print(f"Fichier de démonstration introuvable : {seed_path}")
+        if student_count == 0 and seed_path.exists():
+            with open(seed_path, 'r', encoding='utf-8') as f:
+                seed_sql = f.read()
+                cursor.executescript(seed_sql)
+            print("Données de test insérées avec succès.")
         elif student_count > 0:
-            print(f"La base contient déjà {student_count} élève(s). Aucune donnée de démonstration ajoutée.")
+            print(f"La base contient déjà {student_count} élève(s). Pas d'insertion de données de test.")
         else:
-            print("Base de données créée sans données de démonstration.")
+            print(f"Fichier seed introuvable : {seed_path}")
         
         conn.commit()
         from src.utils.paths import get_db_path
@@ -106,11 +103,4 @@ def init_database(include_demo_data: bool = False) -> None:
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Initialiser la base de données EduPaie.")
-    parser.add_argument(
-        "--demo-data",
-        action="store_true",
-        help="Insérer les données de démonstration si la base est vide.",
-    )
-    args = parser.parse_args()
-    init_database(include_demo_data=args.demo_data)
+    init_database()

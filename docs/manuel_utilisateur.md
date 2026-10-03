@@ -8,8 +8,8 @@ EduPaie est une application de gestion des paiements scolaires pour les écoles.
 
 Au premier lancement, l'application :
 1. Crée automatiquement la base de données
-2. Crée les tables nécessaires sans insérer d'élèves de démonstration
-3. Prépare le système de numérotation des reçus
+2. Insère des données de test (15 élèves avec paiements variés)
+3. Initialise le système de numérotation des reçus
 
 ## Interface principale
 
