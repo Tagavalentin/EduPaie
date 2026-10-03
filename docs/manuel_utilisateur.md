@@ -122,6 +122,7 @@ Le reçu sera régénéré à l'identique et ouvert.
 ## Reçus PDF
 
 Chaque reçu contient :
+- Logo EduPaie et mise en page portrait au format A6
 - Numéro unique (ex: REC-2025-000001)
 - Nom de l'établissement
 - Informations de l'élève (nom, prénom, classe)

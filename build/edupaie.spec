@@ -1,19 +1,24 @@
 # -*- mode: python ; coding: utf-8 -*-
 
+from pathlib import Path
+
 block_cipher = None
+project_root = Path(SPECPATH).resolve().parent
 
 a = Analysis(
-    ['main.py'],
-    pathex=[],
+    [str(project_root / 'main.py')],
+    pathex=[str(project_root)],
     binaries=[],
     datas=[
-        ('sql', 'sql'),
-        ('data', 'data'),
+        (str(project_root / 'sql'), 'sql'),
+        (str(project_root / 'assets' / 'edupaie.png'), 'assets'),
     ],
     hiddenimports=[
         'PySide6.QtCore',
         'PySide6.QtGui',
         'PySide6.QtWidgets',
+        'PySide6.QtPdf',
+        'PySide6.QtPdfWidgets',
         'reportlab',
         'reportlab.pdfgen',
         'reportlab.lib',
@@ -57,5 +62,6 @@ exe = EXE(
     target_arch=None,
     codesign_identity=None,
     entitlements_file=None,
-    icon=None,
+    icon=str(project_root / 'assets' / 'edupaie.ico'),
+    version=str(project_root / 'build' / 'version_info.txt'),
 )

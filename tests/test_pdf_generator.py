@@ -3,6 +3,7 @@ from pathlib import Path
 from datetime import datetime
 import os
 import platform
+from reportlab.lib.pagesizes import A6
 
 from src.utils.pdf_generator import PDFGenerator, montant_en_lettres, print_pdf_file
 from src.ui.receipt_viewer import ReceiptViewerDialog
@@ -57,6 +58,7 @@ def test_generate_receipt(tmp_path):
         content = f.read()
         assert content.startswith(b'%PDF')  # Les fichiers PDF commencent par %PDF
         assert b'%%EOF' in content  # Les fichiers PDF se terminent par %%EOF
+        assert b'/Subtype /Image' in content
 
 
 def test_generate_receipt_creates_default_output_directory(tmp_path, monkeypatch):
@@ -77,6 +79,10 @@ def test_receipt_viewer_displays_and_prints_pdf(tmp_path, qtbot, monkeypatch):
     receipt_path = PDFGenerator().generate_receipt(payment, student, tmp_path / "receipt.pdf")
     viewer = ReceiptViewerDialog(receipt_path)
     qtbot.addWidget(viewer)
+
+    page_size = viewer.document.pagePointSize(0)
+    assert abs(page_size.width() - A6[0]) < 0.1
+    assert abs(page_size.height() - A6[1]) < 0.1
 
     print_calls = []
     monkeypatch.setattr(platform, "system", lambda: "Windows")
